@@ -44,8 +44,10 @@ model {
 }
 '
 
-cat("First time compiling may take one minute")
-stan_model_object=stan_model(model_code=stacking_opt_stan)
+writeLines(stacking_opt_stan, con="stacking_opt.stan")
+
+cat("First time compiling may take one minute...\n")
+stan_model_object=stan_model("stacking_opt.stan")
 stacking_weights=function(lpd_point, lambda=1.0001, stan_model_object=stan_model_object, stack_iter=100000)
 {
 	K=dim(lpd_point)[2]
