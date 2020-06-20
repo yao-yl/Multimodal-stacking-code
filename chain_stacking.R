@@ -41,10 +41,15 @@ model {
   w~dirichlet(lambda);
 }
 '
+if(!file.exists("stacking_opt.stan"))
 writeLines(stacking_opt_stan, con="stacking_opt.stan")
-stacking_weights=function(lpd_point, lambda=1.0001, stan_model_object=stan_model_object, stack_iter=100000)
+stan_model_object=stan_model("stacking_opt.stan") 
+cat("First time compiling may take one minute...\n")
+stacking_weights=function(lpd_point, lambda=1.0001, stack_iter=100000)
 {
 	K=dim(lpd_point)[2]
+	if(is.null(stan_model_object))
+		stop("PLease compile stacking optimizer first")
 	s_w=optimizing(stan_model_object,  data = list(N=dim(lpd_point)[1], K=K, lpd_point=lpd_point, lambda=rep(lambda, dim(lpd_point)[2])), iter=stack_iter)$par[1:K] 
 	return(s_w)
 } 
@@ -67,7 +72,7 @@ chain_stack= function(fits,log_lik_char="log_lik",lambda=1.0001, stack_iter=1000
 	}) 
 	options(warn=0)
 	loo_elpd= loo_chain[1:n, ]
-	chain_weights=stacking_weights(lpd_point=loo_elpd, lambda=lambda, stan_model_object=stan_model_object, stack_iter=stack_iter)
+	chain_weights=stacking_weights(lpd_point=loo_elpd, lambda=lambda, stack_iter=stack_iter)
 	pareto_k=loo_chain[(n+1):(2*n), ]
 	if(print_progress==TRUE){
 	cat("done")
@@ -113,6 +118,12 @@ mixture_draws= function (individual_draws,  weight, random_seed=1, S=NULL, permu
 	}
 	return(mixture_vector)
 }
+
+
+
+
+
+
 
 # An Example:
 # save this as the stan inference code cauchy.stan:
