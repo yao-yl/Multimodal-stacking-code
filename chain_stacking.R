@@ -16,8 +16,6 @@ log_score_loo <- function(w, lpd_point) {
 	}
 	return (sum(apply(lpd_point, 1,  weight_log_sum_exp )) )
 }
-
-
 stacking_opt_stan='
 data {
   int<lower=0> N;
@@ -43,11 +41,7 @@ model {
   w~dirichlet(lambda);
 }
 '
-
 writeLines(stacking_opt_stan, con="stacking_opt.stan")
-
-cat("First time compiling may take one minute...\n")
-stan_model_object=stan_model("stacking_opt.stan")
 stacking_weights=function(lpd_point, lambda=1.0001, stan_model_object=stan_model_object, stack_iter=100000)
 {
 	K=dim(lpd_point)[2]
